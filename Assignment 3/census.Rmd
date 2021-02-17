@@ -1,0 +1,77 @@
+```{r}
+library(tidyverse)
+library(tidycensus)
+library(sf)
+```
+
+```{r}
+vars = 
+  c(
+    white = "B02001_002",
+    black = "B02001_003",
+    not_hispanic = "B03001_002", 
+    hispanic = "B03001_003", 
+    pov_under_100 = "B06012_002", 
+    pov_100_149 = "B06012_003", 
+    pov_150_above = "B06012_004"
+  )
+
+chi_demo <- 
+  get_acs(
+    geography = "tract", 
+    state = 17,
+    county = 031,
+    variables = vars, 
+    year = 2018
+  ) %>% 
+  pivot_wider(
+    -moe, 
+    names_from = variable, 
+    values_from = estimate
+  )
+```
+
+```{r}
+tracts = 
+  read_sf("~/Documents/Urban Data & Informatics/Assignment 3/data/tl_2018_17_tract/tl_2018_17_tract.shp") %>% 
+  filter(COUNTYFP == "031")
+
+comm_areas = read_sf("~/Documents/Urban Data & Informatics/Assignment 3/data/comm_area_shapefile/geo_export_4e89953b-3bec-4e96-a9c3-7e61475e3dfa.shp")
+
+tracts %>% 
+  ggplot() + 
+  geom_sf()
+
+comm_areas %>% 
+  ggplot() + 
+  geom_sf()
+```
+
+```{r}
+chi_demo <- 
+  chi_demo %>% 
+  left_join(tracts, by='GEOID') %>% 
+  st_as_sf()
+```
+
+```{r}
+chi_demo %>% 
+  ggplot(aes(fill = black)) + 
+  geom_sf()
+
+chi_demo_comms <- 
+  comm_areas %>% 
+  st_join(chi_demo) %>% 
+  group_by(area_numbe) %>% 
+  summarize_at(vars(white:pov_150_above), sum)
+
+chi_demo_comms %>% 
+  ggplot(aes(fill = black)) + 
+  geom_sf()
+```
+
+```{r}
+chi_demo_comms %>% 
+  st_write("~/Documents/Urban Data & Informatics/Assignment 3/data/chi_comms_demographics.shp")
+```
+
