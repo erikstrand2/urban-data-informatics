@@ -1,5 +1,6 @@
 # Data folders
 */data
+*/output
 
 # Data types
 *.csv
@@ -8,6 +9,9 @@
 *.shp
 *.shx
 *.json
+*.pdf
+*.docx
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
